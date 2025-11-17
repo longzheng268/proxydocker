@@ -1,5 +1,9 @@
 # 🐳 ProxyDocker - Docker Hub 反向代理
 
+![License](https://img.shields.io/github/license/longzheng268/proxydocker)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange)
+![GitHub Stars](https://img.shields.io/github/stars/longzheng268/proxydocker)
+
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/longzheng268/proxydocker)
 
 一个功能完整的 Docker Hub 反向代理服务，支持多种部署方式（Cloudflare Workers、Docker、Node.js）。提供镜像拉取、网页浏览和搜索功能，**客户端无需安装任何额外软件**，只需配置 Docker 镜像源即可使用。
