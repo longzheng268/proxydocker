@@ -1,0 +1,47 @@
+{
+  "name": "proxydocker",
+  "version": "1.0.0",
+  "description": "Docker Hub reverse proxy with beautiful UI, deployed on Cloudflare Workers or regular servers",
+  "main": "_worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "start": "node server.js",
+    "start:dev": "NODE_ENV=development node server.js",
+    "docker:build": "docker build -t proxydocker .",
+    "docker:run": "docker run -d -p 8080:8080 --name proxydocker proxydocker",
+    "docker:stop": "docker stop proxydocker && docker rm proxydocker",
+    "docker:logs": "docker logs -f proxydocker",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "docker",
+    "docker-hub",
+    "reverse-proxy",
+    "cloudflare-workers",
+    "registry-mirror",
+    "nodejs",
+    "server"
+  ],
+  "author": "longzheng268",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/longzheng268/proxydocker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/longzheng268/proxydocker/issues"
+  },
+  "homepage": "https://github.com/longzheng268/proxydocker#readme"
+}
+
