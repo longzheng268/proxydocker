@@ -1442,11 +1442,6 @@ docker inspect image:tag</code>
 
 		function quickSearch(query) {
 
-		// Docker Hub 浏览功能
-		function openDockerHub(path) {
-			// 直接导航到 Docker Hub 页面路径
-			window.location.href = '/' + path.replace(/^\/+/, '');
-		}
 			document.getElementById('search-input').value = query;
 			performSearch();
 		}
@@ -1454,6 +1449,12 @@ docker inspect image:tag</code>
 		document.getElementById('search-input').addEventListener('keypress', (e) => {
 			if (e.key === 'Enter') performSearch();
 		});
+
+		// Docker Hub 浏览功能
+		function openDockerHub(path) {
+			// 直接导航到 Docker Hub 页面路径
+			window.location.href = '/' + path.replace(/^\\/+/, '');
+		}
 
 		// 镜像转换功能
 		function convertImage() {
@@ -2190,13 +2191,17 @@ async function handleRequest(request, env, ctx) {
 			
 			// Docker Hub API 代理 - 用于网页浏览和搜索
 			try {
-				const newUrl = new URL("https://registry.hub.docker.com" + pathname + url.search);
+				// 对于网页浏览，使用 hub.docker.com；对于 API 调用，使用 registry.hub.docker.com
+				const isWebPage = pathname.includes('/_') || pathname.includes('/r/') || 
+				                   pathname === '/search' || pathname.includes('/explore');
+				const hubDomain = isWebPage ? "https://hub.docker.com" : "https://registry.hub.docker.com";
+				const newUrl = new URL(hubDomain + pathname + url.search);
 
 				// 复制原始请求的标头
 				const headers = new Headers(request.headers);
 
-				// 确保 Host 头部被替换为 hub.docker.com
-				headers.set('Host', 'registry.hub.docker.com');
+				// 确保 Host 头部被替换
+				headers.set('Host', isWebPage ? 'hub.docker.com' : 'registry.hub.docker.com');
 
 				const newRequest = new Request(newUrl, {
 						method: request.method,
