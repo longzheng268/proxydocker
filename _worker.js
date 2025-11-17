@@ -2146,85 +2146,86 @@ async function handleRequest(request, env, ctx) {
 		// CORE PROXY LOGIC - 核心代理逻辑 (critical path, must always work)
 		// ========================================================================
 
-		// 修改包含 %2F 和 %3A 的请求
-		if (!/%2F/.test(url.search) && /%3A/.test(url.toString())) {
-			let modifiedUrl = url.toString().replace(/%3A(?=.*?&)/, '%3Alibrary%2F');
-			url = new URL(modifiedUrl);
-			console.log(`handle_url: ${url}`);
-		}
+		try {
+			// 修改包含 %2F 和 %3A 的请求
+			if (!/%2F/.test(url.search) && /%3A/.test(url.toString())) {
+				let modifiedUrl = url.toString().replace(/%3A(?=.*?&)/, '%3Alibrary%2F');
+				url = new URL(modifiedUrl);
+				console.log(`handle_url: ${url}`);
+			}
 
-		// 处理token请求
-		if (url.pathname.includes('/token')) {
-			let token_parameter = {
+			// 处理token请求
+			if (url.pathname.includes('/token')) {
+				let token_parameter = {
+					headers: {
+						'Host': 'auth.docker.io',
+						'User-Agent': getReqHeader("User-Agent"),
+						'Accept': getReqHeader("Accept"),
+						'Accept-Language': getReqHeader("Accept-Language"),
+						'Accept-Encoding': getReqHeader("Accept-Encoding"),
+						'Connection': 'keep-alive',
+						'Cache-Control': 'max-age=0'
+					}
+				};
+				let token_url = auth_url + url.pathname + url.search;
+				return fetch(new Request(token_url, request), token_parameter);
+			}
+
+			// 修改 /v2/ 请求路径
+			if ( hub_host == 'registry-1.docker.io' && /^\/v2\/[^/]+\/[^/]+\/[^/]+$/.test(url.pathname) && !/^\/v2\/library/.test(url.pathname)) {
+				//url.pathname = url.pathname.replace(/\/v2\//, '/v2/library/');
+				url.pathname = '/v2/library/' + url.pathname.split('/v2/')[1];
+				console.log(`modified_url: ${url.pathname}`);
+			}
+
+			// 更改请求的主机名
+			url.hostname = hub_host;
+
+			// 构造请求参数
+			let parameter = {
 				headers: {
-					'Host': 'auth.docker.io',
+					'Host': hub_host,
 					'User-Agent': getReqHeader("User-Agent"),
 					'Accept': getReqHeader("Accept"),
 					'Accept-Language': getReqHeader("Accept-Language"),
 					'Accept-Encoding': getReqHeader("Accept-Encoding"),
 					'Connection': 'keep-alive',
 					'Cache-Control': 'max-age=0'
-				}
+				},
+				cacheTtl: 3600 // 缓存时间
 			};
-			let token_url = auth_url + url.pathname + url.search;
-			return fetch(new Request(token_url, request), token_parameter);
-		}
 
-		// 修改 /v2/ 请求路径
-		if ( hub_host == 'registry-1.docker.io' && /^\/v2\/[^/]+\/[^/]+\/[^/]+$/.test(url.pathname) && !/^\/v2\/library/.test(url.pathname)) {
-			//url.pathname = url.pathname.replace(/\/v2\//, '/v2/library/');
-			url.pathname = '/v2/library/' + url.pathname.split('/v2/')[1];
-			console.log(`modified_url: ${url.pathname}`);
-		}
+			// 添加Authorization头
+			if (request.headers.has("Authorization")) {
+				parameter.headers.Authorization = getReqHeader("Authorization");
+			}
 
-		// 更改请求的主机名
-		url.hostname = hub_host;
+			// 发起请求并处理响应
+			let original_response = await fetch(new Request(url, request), parameter);
+			let original_response_clone = original_response.clone();
+			let original_text = original_response_clone.body;
+			let response_headers = original_response.headers;
+			let new_response_headers = new Headers(response_headers);
+			let status = original_response.status;
 
-		// 构造请求参数
-		let parameter = {
-			headers: {
-				'Host': hub_host,
-				'User-Agent': getReqHeader("User-Agent"),
-				'Accept': getReqHeader("Accept"),
-				'Accept-Language': getReqHeader("Accept-Language"),
-				'Accept-Encoding': getReqHeader("Accept-Encoding"),
-				'Connection': 'keep-alive',
-				'Cache-Control': 'max-age=0'
-			},
-			cacheTtl: 3600 // 缓存时间
-		};
+			// 修改 Www-Authenticate 头
+			if (new_response_headers.get("Www-Authenticate")) {
+				let auth = new_response_headers.get("Www-Authenticate");
+				let re = new RegExp(auth_url, 'g');
+				new_response_headers.set("Www-Authenticate", response_headers.get("Www-Authenticate").replace(re, workers_url));
+			}
 
-		// 添加Authorization头
-		if (request.headers.has("Authorization")) {
-			parameter.headers.Authorization = getReqHeader("Authorization");
-		}
+			// 处理重定向
+			if (new_response_headers.get("Location")) {
+				return httpHandler(request, new_response_headers.get("Location"));
+			}
 
-		// 发起请求并处理响应
-		let original_response = await fetch(new Request(url, request), parameter);
-		let original_response_clone = original_response.clone();
-		let original_text = original_response_clone.body;
-		let response_headers = original_response.headers;
-		let new_response_headers = new Headers(response_headers);
-		let status = original_response.status;
-
-		// 修改 Www-Authenticate 头
-		if (new_response_headers.get("Www-Authenticate")) {
-			let auth = new_response_headers.get("Www-Authenticate");
-			let re = new RegExp(auth_url, 'g');
-			new_response_headers.set("Www-Authenticate", response_headers.get("Www-Authenticate").replace(re, workers_url));
-		}
-
-		// 处理重定向
-		if (new_response_headers.get("Location")) {
-			return httpHandler(request, new_response_headers.get("Location"));
-		}
-
-		// 返回修改后的响应
-		let response = new Response(original_text, {
-			status,
-			headers: new_response_headers
-		});
-		return response;
+			// 返回修改后的响应
+			let response = new Response(original_text, {
+				status,
+				headers: new_response_headers
+			});
+			return response;
 	} catch (error) {
 		console.error('Core proxy error:', error);
 		return new Response('Proxy error', { status: 502 });
