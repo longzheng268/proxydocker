@@ -2146,8 +2146,9 @@ async function handleRequest(request, env, ctx) {
 		// CORE PROXY LOGIC - 核心代理逻辑 (critical path, must always work)
 		// ========================================================================
 
-		// 修改包含 %2F 和 %3A 的请求
-		if (!/%2F/.test(url.search) && /%3A/.test(url.toString())) {
+		try {
+			// 修改包含 %2F 和 %3A 的请求
+			if (!/%2F/.test(url.search) && /%3A/.test(url.toString())) {
 			let modifiedUrl = url.toString().replace(/%3A(?=.*?&)/, '%3Alibrary%2F');
 			url = new URL(modifiedUrl);
 			console.log(`handle_url: ${url}`);
