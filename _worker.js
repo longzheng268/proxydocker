@@ -155,15 +155,21 @@ async function nginx() {
  * @param {string} hostname 当前主机名
  * @returns {Promise<string>}
  */
+/**
+ * 增强的搜索界面 - 包含使用说明和镜像转换器
+ * @param {string} hostname 当前主机名
+ * @returns {Promise<string>}
+ */
 async function searchInterface(hostname) {
 	const proxyDomain = hostname || 'your-proxy.workers.dev';
+	
 	const text = `
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="zh-CN">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Docker Hub Proxy - Search Images</title>
+		<title>Docker Hub 代理服务 - 使用说明</title>
 		<style>
 		* {
 			margin: 0;
@@ -173,124 +179,26 @@ async function searchInterface(hostname) {
 		
 		body {
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			min-height: 100vh;
-			margin: 0;
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-			overflow: hidden;
-			position: relative;
+			min-height: 100vh;
+			padding: 20px;
 		}
 		
-		/* 动态背景效果 */
-		.background-animation {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			overflow: hidden;
-			z-index: 0;
-		}
-		
-		.bubble {
-			position: absolute;
-			bottom: -100px;
-			background: rgba(255, 255, 255, 0.1);
-			border-radius: 50%;
-			animation: rise 15s infinite ease-in;
-		}
-		
-		.bubble:nth-child(1) { left: 10%; width: 80px; height: 80px; animation-delay: 0s; }
-		.bubble:nth-child(2) { left: 20%; width: 60px; height: 60px; animation-delay: 2s; }
-		.bubble:nth-child(3) { left: 30%; width: 100px; height: 100px; animation-delay: 4s; }
-		.bubble:nth-child(4) { left: 50%; width: 70px; height: 70px; animation-delay: 6s; }
-		.bubble:nth-child(5) { left: 70%; width: 90px; height: 90px; animation-delay: 8s; }
-		.bubble:nth-child(6) { left: 80%; width: 65px; height: 65px; animation-delay: 10s; }
-		
-		@keyframes rise {
-			0% {
-				bottom: -100px;
-				transform: translateX(0) rotate(0deg);
-				opacity: 0;
-			}
-			50% {
-				opacity: 0.4;
-			}
-			100% {
-				bottom: 110%;
-				transform: translateX(100px) rotate(360deg);
-				opacity: 0;
-			}
-		}
-		
-		/* 鼠标追踪光晕效果 */
-		.cursor-glow {
-			position: fixed;
-			width: 300px;
-			height: 300px;
-			background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-			border-radius: 50%;
-			pointer-events: none;
-			z-index: 1;
-			transform: translate(-50%, -50%);
-			transition: opacity 0.3s ease;
-			opacity: 0;
-		}
-		
-		/* 主容器 */
 		.container {
+			max-width: 1200px;
+			margin: 0 auto;
 			position: relative;
 			z-index: 2;
+		}
+		
+		/* 头部 */
+		.header {
 			text-align: center;
-			animation: fadeInUp 1s ease-out;
+			padding: 40px 20px;
+			animation: fadeInDown 0.8s ease-out;
 		}
 		
-		@keyframes fadeInUp {
-			from {
-				opacity: 0;
-				transform: translateY(30px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-		
-		.logo {
-			margin-bottom: 30px;
-			animation: float 3s ease-in-out infinite;
-		}
-		
-		@keyframes float {
-			0%, 100% {
-				transform: translateY(0px);
-			}
-			50% {
-				transform: translateY(-10px);
-			}
-		}
-		
-		.logo svg {
-			filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-			transition: transform 0.3s ease;
-		}
-		
-		.logo:hover svg {
-			transform: scale(1.1) rotate(5deg);
-		}
-		
-		h1 {
-			color: white;
-			font-size: 2.5em;
-			margin-bottom: 15px;
-			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-			animation: slideInDown 0.8s ease-out;
-		}
-		
-		@keyframes slideInDown {
+		@keyframes fadeInDown {
 			from {
 				opacity: 0;
 				transform: translateY(-30px);
@@ -301,250 +209,452 @@ async function searchInterface(hostname) {
 			}
 		}
 		
+		.logo {
+			margin-bottom: 20px;
+			animation: float 3s ease-in-out infinite;
+		}
+		
+		@keyframes float {
+			0%, 100% { transform: translateY(0px); }
+			50% { transform: translateY(-10px); }
+		}
+		
+		.logo svg {
+			filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+		}
+		
+		h1 {
+			color: white;
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+		}
+		
 		.subtitle {
-			color: rgba(255, 255, 255, 0.9);
-			font-size: 1.1em;
-			margin-bottom: 40px;
-			animation: fadeIn 1.2s ease-out;
-		}
-		
-		@keyframes fadeIn {
-			from { opacity: 0; }
-			to { opacity: 1; }
-		}
-		
-		.search-container {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 15px;
+			color: rgba(255, 255, 255, 0.95);
+			font-size: 1.2em;
 			margin-bottom: 30px;
 		}
 		
-		.search-wrapper {
-			position: relative;
-		}
-		
-		#search-input {
-			padding: 16px 24px;
-			font-size: 16px;
-			border: 2px solid rgba(255, 255, 255, 0.3);
-			border-radius: 50px;
-			width: 400px;
+		/* 内容卡片 */
+		.card {
 			background: rgba(255, 255, 255, 0.95);
 			backdrop-filter: blur(10px);
-			transition: all 0.3s ease;
-			outline: none;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
-		
-		#search-input:focus {
-			border-color: rgba(255, 255, 255, 0.8);
-			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(255, 255, 255, 0.2);
-			transform: translateY(-2px);
-		}
-		
-		#search-input::placeholder {
-			color: #999;
-		}
-		
-		#search-button {
-			padding: 16px;
-			background: rgba(255, 255, 255, 0.25);
-			border: 2px solid rgba(255, 255, 255, 0.3);
-			border-radius: 50%;
-			cursor: pointer;
-			width: 56px;
-			height: 56px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: all 0.3s ease;
-			backdrop-filter: blur(10px);
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
-		
-		#search-button:hover {
-			background: rgba(255, 255, 255, 0.35);
-			transform: scale(1.1) rotate(15deg);
-			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-		}
-		
-		#search-button:active {
-			transform: scale(0.95);
-		}
-		
-		#search-button svg {
-			width: 24px;
-			height: 24px;
-			transition: transform 0.3s ease;
-		}
-		
-		#search-button:hover svg {
-			transform: scale(1.1);
-		}
-		
-		.info-cards {
-			display: flex;
-			gap: 20px;
-			margin-top: 50px;
-			flex-wrap: wrap;
-			justify-content: center;
-		}
-		
-		.info-card {
-			background: rgba(255, 255, 255, 0.15);
-			backdrop-filter: blur(10px);
-			border: 1px solid rgba(255, 255, 255, 0.2);
 			border-radius: 15px;
-			padding: 25px;
-			width: 200px;
-			transition: all 0.3s ease;
-			animation: fadeInUp 1s ease-out;
+			padding: 30px;
+			margin-bottom: 20px;
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+			animation: fadeInUp 0.6s ease-out;
 			animation-fill-mode: both;
 		}
 		
-		.info-card:nth-child(1) { animation-delay: 0.2s; }
-		.info-card:nth-child(2) { animation-delay: 0.4s; }
-		.info-card:nth-child(3) { animation-delay: 0.6s; }
-		
-		.info-card:hover {
-			background: rgba(255, 255, 255, 0.25);
-			transform: translateY(-10px);
-			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+		@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
 		}
 		
-		.info-card h3 {
+		.card:nth-child(2) { animation-delay: 0.1s; }
+		.card:nth-child(3) { animation-delay: 0.2s; }
+		.card:nth-child(4) { animation-delay: 0.3s; }
+		.card:nth-child(5) { animation-delay: 0.4s; }
+		
+		.card h2 {
+			color: #333;
+			font-size: 1.8em;
+			margin-bottom: 20px;
+			border-bottom: 3px solid #667eea;
+			padding-bottom: 10px;
+		}
+		
+		.card h3 {
+			color: #555;
+			font-size: 1.3em;
+			margin: 20px 0 10px 0;
+		}
+		
+		.card p {
+			color: #666;
+			line-height: 1.8;
+			margin-bottom: 15px;
+		}
+		
+		/* 搜索区域 */
+		.search-section {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+			margin: 20px 0;
+		}
+		
+		.search-input {
+			flex: 1;
+			padding: 16px 24px;
+			font-size: 16px;
+			border: 2px solid #ddd;
+			border-radius: 50px;
+			background: white;
+			transition: all 0.3s ease;
+			outline: none;
+		}
+		
+		.search-input:focus {
+			border-color: #667eea;
+			box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+		}
+		
+		.search-button {
+			padding: 16px 32px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			color: white;
-			font-size: 1.2em;
-			margin-bottom: 10px;
+			border: none;
+			border-radius: 50px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
 		}
 		
-		.info-card p {
+		.search-button:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+		}
+		
+		/* 转换器区域 */
+		.converter {
+			background: #f8f9fa;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+		}
+		
+		.converter-input {
+			width: 100%;
+			padding: 14px 20px;
+			font-size: 15px;
+			border: 2px solid #ddd;
+			border-radius: 8px;
+			margin-bottom: 15px;
+			font-family: 'Courier New', monospace;
+		}
+		
+		.converter-output {
+			background: #fff;
+			border: 2px solid #667eea;
+			border-radius: 8px;
+			padding: 14px 20px;
+			font-family: 'Courier New', monospace;
+			font-size: 14px;
+			color: #333;
+			min-height: 50px;
+			word-break: break-all;
+			display: none;
+		}
+		
+		.converter-output.show {
+			display: block;
+		}
+		
+		.copy-button {
+			background: #667eea;
+			color: white;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 6px;
+			cursor: pointer;
+			margin-top: 10px;
+			font-size: 14px;
+			transition: all 0.3s ease;
+		}
+		
+		.copy-button:hover {
+			background: #5568d3;
+		}
+		
+		.copy-button:active {
+			transform: scale(0.95);
+		}
+		
+		/* 代码块 */
+		.code-block {
+			background: #2d2d2d;
+			color: #f8f8f2;
+			padding: 20px;
+			border-radius: 8px;
+			margin: 15px 0;
+			overflow-x: auto;
+			font-family: 'Courier New', monospace;
+			font-size: 14px;
+			line-height: 1.6;
+			position: relative;
+		}
+		
+		.code-block code {
+			display: block;
+		}
+		
+		.code-block .copy-code {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			background: rgba(255, 255, 255, 0.1);
+			color: white;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			padding: 6px 12px;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			transition: all 0.3s ease;
+		}
+		
+		.code-block .copy-code:hover {
+			background: rgba(255, 255, 255, 0.2);
+		}
+		
+		.command {
+			color: #50fa7b;
+		}
+		
+		.comment {
+			color: #6272a4;
+		}
+		
+		/* 提示框 */
+		.tip {
+			background: #e7f3ff;
+			border-left: 4px solid #2196F3;
+			padding: 15px;
+			margin: 15px 0;
+			border-radius: 4px;
+		}
+		
+		.tip strong {
+			color: #1976D2;
+		}
+		
+		.warning {
+			background: #fff3e0;
+			border-left: 4px solid #ff9800;
+			padding: 15px;
+			margin: 15px 0;
+			border-radius: 4px;
+		}
+		
+		.warning strong {
+			color: #f57c00;
+		}
+		
+		/* 功能列表 */
+		.features {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 15px;
+			margin: 20px 0;
+		}
+		
+		.feature-item {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			transition: all 0.3s ease;
+		}
+		
+		.feature-item:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+		}
+		
+		.feature-item h4 {
+			font-size: 1.1em;
+			margin-bottom: 8px;
+		}
+		
+		.feature-item p {
 			color: rgba(255, 255, 255, 0.9);
 			font-size: 0.9em;
-			line-height: 1.5;
+			margin: 0;
 		}
 		
-		.footer {
-			position: fixed;
-			bottom: 20px;
-			color: rgba(255, 255, 255, 0.7);
-			font-size: 0.9em;
-			z-index: 2;
-		}
-		
+		/* 响应式 */
 		@media (max-width: 768px) {
 			h1 { font-size: 2em; }
-			#search-input { width: 280px; font-size: 14px; padding: 14px 20px; }
-			#search-button { width: 50px; height: 50px; }
-			.info-cards { flex-direction: column; align-items: center; margin-top: 30px; }
-			.info-card { width: 90%; max-width: 300px; }
-			.subtitle { font-size: 1em; }
+			.card { padding: 20px; }
+			.search-section {
+				flex-direction: column;
+			}
+			.search-input {
+				width: 100%;
+			}
 		}
 		
 		@media (max-width: 480px) {
-			h1 { font-size: 1.5em; }
-			#search-input { width: 220px; font-size: 14px; }
-			.info-card { padding: 20px; }
+			h1 { font-size: 1.6em; }
+			.subtitle { font-size: 1em; }
+			.card h2 { font-size: 1.4em; }
 		}
 		</style>
 	</head>
 	<body>
-		<!-- 鼠标追踪光晕 -->
-		<div class="cursor-glow" id="cursorGlow"></div>
-		
-		<!-- 背景动画气泡 -->
-		<div class="background-animation">
-			<div class="bubble"></div>
-			<div class="bubble"></div>
-			<div class="bubble"></div>
-			<div class="bubble"></div>
-			<div class="bubble"></div>
-			<div class="bubble"></div>
-		</div>
-		
-		<!-- 主内容 -->
 		<div class="container">
-			<div class="logo">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18" fill="#ffffff" width="120" height="90">
-					<path d="M23.763 6.886c-.065-.053-.673-.512-1.954-.512-.32 0-.659.03-1.01.087-.248-1.703-1.651-2.533-1.716-2.57l-.345-.2-.227.328a4.596 4.596 0 0 0-.611 1.433c-.23.972-.09 1.884.403 2.666-.596.331-1.546.418-1.744.42H.752a.753.753 0 0 0-.75.749c-.007 1.456.233 2.864.692 4.07.545 1.43 1.355 2.483 2.409 3.13 1.181.725 3.104 1.14 5.276 1.14 1.016 0 2.03-.092 2.93-.266 1.417-.273 2.705-.742 3.826-1.391a10.497 10.497 0 0 0 2.61-2.14c1.252-1.42 1.998-3.005 2.553-4.408.075.003.148.005.221.005 1.371 0 2.215-.55 2.68-1.01.505-.5.685-.998.704-1.053L24 7.076l-.237-.19Z"></path>
-					<path d="M2.216 8.075h2.119a.186.186 0 0 0 .185-.186V6a.186.186 0 0 0-.185-.186H2.216A.186.186 0 0 0 2.031 6v1.89c0 .103.083.186.185.186Zm2.92 0h2.118a.185.185 0 0 0 .185-.186V6a.185.185 0 0 0-.185-.186H5.136A.185.185 0 0 0 4.95 6v1.89c0 .103.083.186.186.186Zm2.964 0h2.118a.186.186 0 0 0 .185-.186V6a.186.186 0 0 0-.185-.186H8.1A.185.185 0 0 0 7.914 6v1.89c0 .103.083.186.186.186Zm2.928 0h2.119a.185.185 0 0 0 .185-.186V6a.185.185 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm-5.892-2.72h2.118a.185.185 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.186v1.89c0 .103.083.186.186.186Zm2.964 0h2.118a.186.186 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186H8.1a.186.186 0 0 0-.186.186v1.89c0 .103.083.186.186.186Zm2.928 0h2.119a.185.185 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm0-2.72h2.119a.186.186 0 0 0 .185-.186V.56a.185.185 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm2.955 5.44h2.118a.185.185 0 0 0 .186-.186V6a.185.185 0 0 0-.186-.186h-2.118a.185.185 0 0 0-.185.186v1.89c0 .103.083.186.185.186Z"></path>
-				</svg>
-			</div>
-			
-			<h1>Docker Hub Proxy</h1>
-			<p class="subtitle">Fast and reliable Docker image registry proxy</p>
-			
-			<div class="search-container">
-				<div class="search-wrapper">
-					<input type="text" id="search-input" placeholder="Search for Docker images..." autocomplete="off">
-				</div>
-				<button id="search-button" title="Search">
-					<svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+			<!-- 头部 -->
+			<div class="header">
+				<div class="logo">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 18" fill="#ffffff" width="120" height="90">
+						<path d="M23.763 6.886c-.065-.053-.673-.512-1.954-.512-.32 0-.659.03-1.01.087-.248-1.703-1.651-2.533-1.716-2.57l-.345-.2-.227.328a4.596 4.596 0 0 0-.611 1.433c-.23.972-.09 1.884.403 2.666-.596.331-1.546.418-1.744.42H.752a.753.753 0 0 0-.75.749c-.007 1.456.233 2.864.692 4.07.545 1.43 1.355 2.483 2.409 3.13 1.181.725 3.104 1.14 5.276 1.14 1.016 0 2.03-.092 2.93-.266 1.417-.273 2.705-.742 3.826-1.391a10.497 10.497 0 0 0 2.61-2.14c1.252-1.42 1.998-3.005 2.553-4.408.075.003.148.005.221.005 1.371 0 2.215-.55 2.68-1.01.505-.5.685-.998.704-1.053L24 7.076l-.237-.19Z"></path>
+						<path d="M2.216 8.075h2.119a.186.186 0 0 0 .185-.186V6a.186.186 0 0 0-.185-.186H2.216A.186.186 0 0 0 2.031 6v1.89c0 .103.083.186.185.186Zm2.92 0h2.118a.185.185 0 0 0 .185-.186V6a.185.185 0 0 0-.185-.186H5.136A.185.185 0 0 0 4.95 6v1.89c0 .103.083.186.186.186Zm2.964 0h2.118a.186.186 0 0 0 .185-.186V6a.186.186 0 0 0-.185-.186H8.1A.185.185 0 0 0 7.914 6v1.89c0 .103.083.186.186.186Zm2.928 0h2.119a.185.185 0 0 0 .185-.186V6a.185.185 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm-5.892-2.72h2.118a.185.185 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.186v1.89c0 .103.083.186.186.186Zm2.964 0h2.118a.186.186 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186H8.1a.186.186 0 0 0-.186.186v1.89c0 .103.083.186.186.186Zm2.928 0h2.119a.185.185 0 0 0 .185-.186V3.28a.186.186 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm0-2.72h2.119a.186.186 0 0 0 .185-.186V.56a.185.185 0 0 0-.185-.186h-2.119a.186.186 0 0 0-.185.186v1.89c0 .103.083.186.185.186Zm2.955 5.44h2.118a.185.185 0 0 0 .186-.186V6a.185.185 0 0 0-.186-.186h-2.118a.185.185 0 0 0-.185.186v1.89c0 .103.083.186.185.186Z"></path>
 					</svg>
-				</button>
+				</div>
+				<h1>Docker Hub 代理服务</h1>
+				<p class="subtitle">🚀 快速、安全、免费的 Docker 镜像代理</p>
 			</div>
 			
-			<div class="info-cards">
-				<div class="info-card">
-					<h3>🚀 Fast</h3>
-					<p>Optimized caching for faster image pulls</p>
-				</div>
-				<div class="info-card">
-					<h3>🔒 Secure</h3>
-					<p>Secure proxy with SSL/TLS support</p>
-				</div>
-				<div class="info-card">
-					<h3>🌐 Global</h3>
-					<p>Access Docker Hub from anywhere</p>
+			<!-- 搜索镜像 -->
+			<div class="card">
+				<h2>🔍 搜索 Docker 镜像</h2>
+				<p>输入关键词搜索 Docker Hub 上的镜像：</p>
+				<div class="search-section">
+					<input type="text" id="search-input" class="search-input" placeholder="例如：nginx, redis, mysql..." autocomplete="off">
+					<button id="search-button" class="search-button">搜索</button>
 				</div>
 			</div>
-		</div>
-		
-		<div class="footer">
-			Docker Hub Proxy Service
+			
+			<!-- 镜像转换器 -->
+			<div class="card">
+				<h2>🔄 镜像地址转换器</h2>
+				<p>已知官方镜像名称或链接？快速生成代理地址和拉取命令：</p>
+				
+				<div class="converter">
+					<input type="text" id="convert-input" class="converter-input" placeholder="输入官方镜像名称或链接，例如：nginx:latest 或 library/nginx:latest">
+					<div id="convert-output" class="converter-output"></div>
+				</div>
+			</div>
+			
+			<!-- 快速开始 -->
+			<div class="card">
+				<h2>⚡ 快速开始</h2>
+				
+				<h3>方法一：配置 Docker 镜像加速器（推荐）</h3>
+				<p>一次配置，全局生效，无需修改拉取命令。</p>
+				
+				<div class="code-block">
+					<button class="copy-code" onclick="copyCode(this)">复制</button>
+					<code><span class="comment"># 1. 编辑 Docker 配置文件</span>
+sudo nano /etc/docker/daemon.json
+
+<span class="comment"># 2. 添加以下内容</span>
+{
+  "registry-mirrors": ["https://${proxyDomain}"]
+}
+
+<span class="comment"># 3. 重启 Docker 服务</span>
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+<span class="comment"># 4. 验证配置</span>
+docker info | grep "Registry Mirrors"</code>
+				</div>
+				
+				<div class="tip">
+					<strong>💡 提示：</strong> 配置后，所有 <code>docker pull</code> 命令都会自动使用代理，无需修改命令。
+				</div>
+				
+				<h3>方法二：直接使用代理地址</h3>
+				<p>无需配置，直接在拉取命令中指定代理地址。</p>
+				
+				<div class="code-block">
+					<button class="copy-code" onclick="copyCode(this)">复制</button>
+					<code><span class="comment"># 官方镜像</span>
+<span class="command">docker pull ${proxyDomain}/library/nginx:latest</span>
+
+<span class="comment"># 用户镜像</span>
+<span class="command">docker pull ${proxyDomain}/username/imagename:tag</span></code>
+				</div>
+			</div>
+			
+			<!-- 使用示例 -->
+			<div class="card">
+				<h2>📝 使用示例</h2>
+				
+				<h3>拉取官方镜像</h3>
+				<div class="code-block">
+					<button class="copy-code" onclick="copyCode(this)">复制</button>
+					<code><span class="comment"># Nginx</span>
+<span class="command">docker pull ${proxyDomain}/library/nginx:alpine</span>
+
+<span class="comment"># Redis</span>
+<span class="command">docker pull ${proxyDomain}/library/redis:latest</span>
+
+<span class="comment"># MySQL</span>
+<span class="command">docker pull ${proxyDomain}/library/mysql:8.0</span></code>
+				</div>
+				
+				<h3>拉取用户镜像</h3>
+				<div class="code-block">
+					<button class="copy-code" onclick="copyCode(this)">复制</button>
+					<code><span class="command">docker pull ${proxyDomain}/bitnami/postgresql:latest</span>
+<span class="command">docker pull ${proxyDomain}/grafana/grafana:latest</span></code>
+				</div>
+			</div>
+			
+			<!-- 主要功能 -->
+			<div class="card">
+				<h2>✨ 主要功能</h2>
+				<div class="features">
+					<div class="feature-item">
+						<h4>🚀 全球加速</h4>
+						<p>Cloudflare CDN 加速，全球访问飞快</p>
+					</div>
+					<div class="feature-item">
+						<h4>🔒 安全可靠</h4>
+						<p>HTTPS 加密传输，保护您的数据安全</p>
+					</div>
+					<div class="feature-item">
+						<h4>💰 完全免费</h4>
+						<p>基于 Cloudflare Workers，免费使用</p>
+					</div>
+					<div class="feature-item">
+						<h4>🌍 多仓库支持</h4>
+						<p>支持 Docker Hub, GCR, Quay 等</p>
+					</div>
+				</div>
+			</div>
+			
+			<!-- 常见问题 -->
+			<div class="card">
+				<h2>❓ 常见问题</h2>
+				
+				<h3>如何拉取私有镜像？</h3>
+				<p>首先登录到代理服务器：</p>
+				<div class="code-block">
+					<button class="copy-code" onclick="copyCode(this)">复制</button>
+					<code><span class="command">docker login ${proxyDomain}</span>
+<span class="comment"># 输入您的 Docker Hub 用户名和密码</span></code>
+				</div>
+				
+				<h3>支持哪些镜像仓库？</h3>
+				<p>目前支持以下镜像仓库：</p>
+				<ul style="margin-left: 20px; line-height: 2;">
+					<li>Docker Hub (默认)</li>
+					<li>Google Container Registry (gcr.io)</li>
+					<li>Quay.io</li>
+					<li>GitHub Container Registry (ghcr.io)</li>
+					<li>Kubernetes Registry (registry.k8s.io)</li>
+				</ul>
+			</div>
 		</div>
 		
 		<script>
-		// 鼠标追踪效果
-		const cursorGlow = document.getElementById('cursorGlow');
-		let mouseX = 0, mouseY = 0;
-		let glowX = 0, glowY = 0;
-		
-		document.addEventListener('mousemove', (e) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-			cursorGlow.style.opacity = '1';
-		});
-		
-		document.addEventListener('mouseleave', () => {
-			cursorGlow.style.opacity = '0';
-		});
-		
-		// 平滑动画效果
-		function animateGlow() {
-			glowX += (mouseX - glowX) * 0.1;
-			glowY += (mouseY - glowY) * 0.1;
-			
-			cursorGlow.style.left = glowX + 'px';
-			cursorGlow.style.top = glowY + 'px';
-			
-			requestAnimationFrame(animateGlow);
-		}
-		animateGlow();
-		
 		// 搜索功能
 		function performSearch() {
 			const query = document.getElementById('search-input').value.trim();
 			if (query) {
-				// 添加加载动画
-				const button = document.getElementById('search-button');
-				button.style.transform = 'rotate(360deg)';
-				setTimeout(() => {
-					window.location.href = '/search?q=' + encodeURIComponent(query);
-				}, 300);
+				window.location.href = '/search?q=' + encodeURIComponent(query) + '&page=1';
 			}
 		}
 		
@@ -555,28 +665,104 @@ async function searchInterface(hostname) {
 			}
 		});
 		
-		// 输入框动画效果
-		const searchInput = document.getElementById('search-input');
-		searchInput.addEventListener('input', function() {
-			if (this.value) {
-				this.style.borderColor = 'rgba(255, 255, 255, 0.6)';
-			} else {
-				this.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+		// 镜像转换器
+		document.getElementById('convert-input').addEventListener('input', function() {
+			const input = this.value.trim();
+			const output = document.getElementById('convert-output');
+			
+			if (!input) {
+				output.classList.remove('show');
+				return;
 			}
+			
+			let imageName = input;
+			
+			// 处理Docker Hub链接
+			if (input.includes('hub.docker.com')) {
+				const match = input.match(/hub\\.docker\\.com\\/(?:_\\/)?([^/]+)\\/([^/\\s]+)/);
+				if (match) {
+					imageName = match[1] + '/' + match[2].replace(/\\/.*$/, '');
+				}
+			}
+			
+			// 处理镜像名称
+			let proxyImage = imageName;
+			
+			// 如果没有斜杠，说明是官方镜像，加上 library 前缀
+			if (!imageName.includes('/')) {
+				proxyImage = 'library/' + imageName;
+			}
+			
+			// 生成代理地址和命令
+			const proxyDomain = '${proxyDomain}';
+			const pullCommand = \`docker pull \${proxyDomain}/\${proxyImage}\`;
+			
+			output.innerHTML = \`
+				<div style="margin-bottom: 10px;">
+					<strong>代理地址：</strong><br>
+					<code>\${proxyDomain}/\${proxyImage}</code>
+				</div>
+				<div>
+					<strong>拉取命令：</strong><br>
+					<code>\${pullCommand}</code>
+				</div>
+				<button class="copy-button" onclick="copyToClipboard('\${pullCommand}')">复制命令</button>
+			\`;
+			
+			output.classList.add('show');
 		});
+		
+		// 复制代码块
+		function copyCode(button) {
+			const codeBlock = button.parentElement.querySelector('code');
+			const text = codeBlock.textContent;
+			copyToClipboard(text);
+			
+			const originalText = button.textContent;
+			button.textContent = '已复制！';
+			setTimeout(() => {
+				button.textContent = originalText;
+			}, 2000);
+		}
+		
+		// 复制到剪贴板
+		function copyToClipboard(text) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(() => {
+					console.log('Copied to clipboard');
+				}).catch(err => {
+					console.error('Failed to copy: ', err);
+					fallbackCopyTextToClipboard(text);
+				});
+			} else {
+				fallbackCopyTextToClipboard(text);
+			}
+		}
+		
+		function fallbackCopyTextToClipboard(text) {
+			const textArea = document.createElement("textarea");
+			textArea.value = text;
+			textArea.style.position = "fixed";
+			textArea.style.top = "-9999px";
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			
+			try {
+				document.execCommand('copy');
+				console.log('Fallback: Copied to clipboard');
+			} catch (err) {
+				console.error('Fallback: Failed to copy', err);
+			}
+			
+			document.body.removeChild(textArea);
+		}
 		</script>
 	</body>
 	</html>
 	`;
 	return text;
 }
-
-/**
- * 搜索结果页面 - 展示Docker镜像搜索结果
- * @param {string} query 搜索关键词
- * @param {Array} results 搜索结果
- * @returns {Promise<string>}
- */
 /**
  * 搜索结果页面 - 展示Docker镜像搜索结果（带分页）
  * @param {string} query 搜索关键词
