@@ -81,17 +81,14 @@ async function workerResponseToNodeResponse(workerResponse, nodeRes) {
   
   // Send body
   if (workerResponse.body) {
-    const reader = workerResponse.body.getReader();
-    const pump = async () => {
-      const { done, value } = await reader.read();
-      if (done) {
-        nodeRes.end();
-        return;
-      }
-      nodeRes.write(Buffer.from(value));
-      pump();
-    };
-    await pump();
+    // node-fetch v2 doesn't have getReader(), use buffer() or text()
+    try {
+      const buffer = await workerResponse.buffer();
+      nodeRes.end(buffer);
+    } catch (error) {
+      console.error('Error reading response body:', error);
+      nodeRes.end();
+    }
   } else {
     nodeRes.end();
   }

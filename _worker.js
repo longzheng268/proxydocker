@@ -721,6 +721,7 @@ async function searchInterface(hostname) {
 			<div class="tabs">
 				<button class="tab active" onclick="switchTab('search')">🔍 搜索镜像</button>
 				<button class="tab" onclick="switchTab('convert')">🔄 镜像转换</button>
+				<button class="tab" onclick="switchTab('browse')">🌐 浏览 Docker Hub</button>
 				<button class="tab" onclick="switchTab('config')">⚙️ 配置指南</button>
 				<button class="tab" onclick="switchTab('compose')">📦 Docker Compose</button>
 				<button class="tab" onclick="switchTab('registry')">🌐 多仓库支持</button>
@@ -810,6 +811,69 @@ async function searchInterface(hostname) {
 					</div>
 				</div>
 			</div>
+
+
+		<!-- 浏览 Docker Hub 标签页 -->
+		<div id="browse-content" class="tab-content">
+			<div class="usage-section">
+				<h3>Docker Hub 镜像浏览</h3>
+				<p style="color: #a0a0ff; margin-bottom: 15px;">
+					直接浏览 Docker Hub 的镜像仓库，支持查看镜像详情、标签列表和文档。
+				</p>
+				
+				<div class="example">
+					<div class="example-label">功能说明</div>
+					<p style="color: #a0a0ff; margin: 10px 0;">
+						• 浏览官方镜像和用户镜像<br>
+						• 查看镜像详细信息、标签和版本<br>
+						• 查看镜像文档和使用说明<br>
+						• 支持多级分页浏览
+					</p>
+				</div>
+				
+				<div style="margin-top: 20px;">
+					<button class="search-button" onclick="openDockerHub('/_/nginx')" style="margin: 5px;">
+						<span>🌐 Nginx 官方镜像</span>
+					</button>
+					<button class="search-button" onclick="openDockerHub('/_/redis')" style="margin: 5px;">
+						<span>💾 Redis 官方镜像</span>
+					</button>
+					<button class="search-button" onclick="openDockerHub('/_/mysql')" style="margin: 5px;">
+						<span>🗄️ MySQL 官方镜像</span>
+					</button>
+					<button class="search-button" onclick="openDockerHub('/search')" style="margin: 5px;">
+						<span>🔍 浏览所有镜像</span>
+					</button>
+				</div>
+			</div>
+			
+			<div class="usage-section">
+				<h3>使用方法</h3>
+				<p style="color: #a0a0ff; margin-bottom: 15px;">
+					点击上方按钮将打开 Docker Hub 对应页面，您可以：
+				</p>
+				<div class="example">
+					<div class="example-label">直接在地址栏输入</div>
+					<div class="code-block" style="position:relative;">
+						<code>${proxyDomain}/_/nginx          # 官方镜像页面
+${proxyDomain}/r/grafana/grafana  # 用户镜像页面
+${proxyDomain}/search             # 浏览所有镜像
+${proxyDomain}/search?q=postgres  # 搜索镜像</code>
+						<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+					</div>
+				</div>
+				<div class="example">
+					<div class="example-label">支持的 URL 格式</div>
+					<p style="color: #a0a0ff; margin: 10px 0;">
+						• <code class="code-inline">/_/镜像名</code> - 官方镜像（如 /_/nginx）<br>
+						• <code class="code-inline">/r/用户/镜像</code> - 用户镜像（如 /r/grafana/grafana）<br>
+						• <code class="code-inline">/search</code> - 浏览和搜索镜像<br>
+						• <code class="code-inline">/v2/repositories/...</code> - Docker Hub API<br>
+						• 支持所有 Docker Hub 的分页和详情页面
+					</p>
+				</div>
+			</div>
+		</div>
 
 			<!-- 镜像转换标签页 -->
 			<div id="convert-content" class="tab-content">
@@ -1377,6 +1441,12 @@ docker inspect image:tag</code>
 		}
 
 		function quickSearch(query) {
+
+		// Docker Hub 浏览功能
+		function openDockerHub(path) {
+			// 直接导航到 Docker Hub 页面路径
+			window.location.href = '/' + path.replace(/^\/+/, '');
+		}
 			document.getElementById('search-input').value = query;
 			performSearch();
 		}
