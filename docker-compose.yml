@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  proxydocker:
+    build: .
+    container_name: proxydocker
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Server configuration
+      - PORT=8080
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      
+      # Optional: Custom homepage URL or "nginx" for fake nginx page
+      # - CUSTOM_URL=https://example.com
+      # - CUSTOM_URL=nginx
+      
+      # Optional: Redirect homepage to another URL
+      # - REDIRECT_URL=https://example.com
+      
+      # Optional: Block user agents (comma-separated)
+      # - BLOCK_UA=bot,crawler,spider
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/v2/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    
+    # Resource limits (optional)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
+    #       memory: 512M
+    #     reservations:
+    #       cpus: '0.25'
+    #       memory: 128M
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Optional: Use a custom network
+# networks:
+#   default:
+#     name: proxydocker_network
