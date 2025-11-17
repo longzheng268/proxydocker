@@ -152,9 +152,11 @@ async function nginx() {
 
 /**
  * 搜索界面 - 带动画效果和响应式设计
+ * @param {string} hostname 当前主机名
  * @returns {Promise<string>}
  */
-async function searchInterface() {
+async function searchInterface(hostname) {
+	const proxyDomain = hostname || 'your-proxy.workers.dev';
 	const text = `
 	<!DOCTYPE html>
 	<html lang="en">
@@ -575,28 +577,109 @@ async function searchInterface() {
  * @param {Array} results 搜索结果
  * @returns {Promise<string>}
  */
-async function searchResultsPage(query, results) {
-	const resultsHTML = results.map((result, index) => `
-		<div class="result-card" style="animation-delay: ${index * 0.1}s">
+/**
+ * 搜索结果页面 - 展示Docker镜像搜索结果（带分页）
+ * @param {string} query 搜索关键词
+ * @param {Array} results 搜索结果
+ * @param {number} page 当前页码
+ * @param {number} totalCount 总结果数
+ * @param {string} hostname 当前主机名
+ * @returns {Promise<string>}
+ */
+async function searchResultsPage(query, results, page = 1, totalCount = 0, hostname = 'your-proxy.workers.dev') {
+	const proxyDomain = hostname || 'your-proxy.workers.dev';
+	const pageSize = 20;
+	const totalPages = Math.ceil(totalCount / pageSize);
+	
+	const resultsHTML = results.map((result, index) => {
+		const imageName = result.name || 'Unknown';
+		const isOfficial = !imageName.includes('/');
+		const proxyImage = isOfficial ? `library/${imageName}` : imageName;
+		const pullCommand = `docker pull ${proxyDomain}/${proxyImage}`;
+		
+		return `
+		<div class="result-card" style="animation-delay: ${index * 0.05}s">
 			<div class="result-header">
-				<h3>${result.name || 'Unknown'}</h3>
+				<h3>${imageName}</h3>
 				<span class="stars">⭐ ${result.star_count || 0}</span>
 			</div>
 			<p class="description">${result.description || 'No description available'}</p>
+			<div class="pull-command">
+				<code>${pullCommand}</code>
+				<button class="copy-btn" onclick="copyToClipboard('${pullCommand}', this)">
+					<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+						<path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+						<path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+					</svg>
+				</button>
+			</div>
 			<div class="result-footer">
 				<span class="pulls">📥 ${formatNumber(result.pull_count || 0)} pulls</span>
-				<a href="https://hub.docker.com/r/${result.name}" target="_blank" rel="noopener noreferrer" class="view-link">View on Docker Hub →</a>
+				<span class="official-badge">${isOfficial ? '🏅 Official' : ''}</span>
+				<a href="https://hub.docker.com/r/${imageName}" target="_blank" rel="noopener noreferrer" class="view-link">Docker Hub →</a>
 			</div>
 		</div>
-	`).join('');
+	`;
+	}).join('');
+	
+	// Generate pagination HTML
+	let paginationHTML = '';
+	if (totalPages > 1) {
+		const maxVisiblePages = 7;
+		let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+		let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+		
+		if (endPage - startPage < maxVisiblePages - 1) {
+			startPage = Math.max(1, endPage - maxVisiblePages + 1);
+		}
+		
+		paginationHTML = '<div class="pagination">';
+		
+		// Previous button
+		if (page > 1) {
+			paginationHTML += `<a href="/search?q=${encodeURIComponent(query)}&page=${page - 1}" class="page-btn">« 上一页</a>`;
+		}
+		
+		// First page
+		if (startPage > 1) {
+			paginationHTML += `<a href="/search?q=${encodeURIComponent(query)}&page=1" class="page-btn">1</a>`;
+			if (startPage > 2) {
+				paginationHTML += '<span class="page-dots">...</span>';
+			}
+		}
+		
+		// Page numbers
+		for (let i = startPage; i <= endPage; i++) {
+			if (i === page) {
+				paginationHTML += `<span class="page-btn active">${i}</span>`;
+			} else {
+				paginationHTML += `<a href="/search?q=${encodeURIComponent(query)}&page=${i}" class="page-btn">${i}</a>`;
+			}
+		}
+		
+		// Last page
+		if (endPage < totalPages) {
+			if (endPage < totalPages - 1) {
+				paginationHTML += '<span class="page-dots">...</span>';
+			}
+			paginationHTML += `<a href="/search?q=${encodeURIComponent(query)}&page=${totalPages}" class="page-btn">${totalPages}</a>`;
+		}
+		
+		// Next button
+		if (page < totalPages) {
+			paginationHTML += `<a href="/search?q=${encodeURIComponent(query)}&page=${page + 1}" class="page-btn">下一页 »</a>`;
+		}
+		
+		paginationHTML += '</div>';
+	}
 
 	const text = `
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="zh-CN">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Search Results - ${query}</title>
+		<title>搜索结果 - ${query}</title>
 		<style>
 		* {
 			margin: 0;
@@ -651,6 +734,12 @@ async function searchResultsPage(query, results) {
 			font-weight: bold;
 		}
 		
+		.search-meta {
+			color: #666;
+			font-size: 0.9em;
+			margin-top: 5px;
+		}
+		
 		.back-link {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 			color: white;
@@ -671,6 +760,7 @@ async function searchResultsPage(query, results) {
 			grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 			gap: 20px;
 			animation: fadeIn 0.8s ease-out;
+			margin-bottom: 30px;
 		}
 		
 		@keyframes fadeIn {
@@ -716,6 +806,7 @@ async function searchResultsPage(query, results) {
 			color: #333;
 			font-size: 1.3em;
 			word-break: break-word;
+			flex: 1;
 		}
 		
 		.stars {
@@ -725,13 +816,55 @@ async function searchResultsPage(query, results) {
 			border-radius: 20px;
 			font-size: 0.9em;
 			white-space: nowrap;
+			margin-left: 10px;
 		}
 		
 		.description {
 			color: #666;
 			line-height: 1.6;
 			margin-bottom: 15px;
-			min-height: 60px;
+			min-height: 48px;
+		}
+		
+		.pull-command {
+			background: #2d2d2d;
+			color: #50fa7b;
+			padding: 12px 15px;
+			border-radius: 8px;
+			margin-bottom: 15px;
+			font-family: 'Courier New', monospace;
+			font-size: 13px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			position: relative;
+		}
+		
+		.pull-command code {
+			flex: 1;
+			word-break: break-all;
+		}
+		
+		.copy-btn {
+			background: rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			color: #fff;
+			padding: 6px 10px;
+			border-radius: 4px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+		
+		.copy-btn:hover {
+			background: rgba(255, 255, 255, 0.2);
+		}
+		
+		.copy-btn.copied {
+			background: #50fa7b;
+			color: #2d2d2d;
 		}
 		
 		.result-footer {
@@ -740,11 +873,19 @@ async function searchResultsPage(query, results) {
 			align-items: center;
 			padding-top: 15px;
 			border-top: 1px solid rgba(0, 0, 0, 0.1);
+			flex-wrap: wrap;
+			gap: 10px;
 		}
 		
 		.pulls {
 			color: #999;
 			font-size: 0.9em;
+		}
+		
+		.official-badge {
+			color: #667eea;
+			font-size: 0.85em;
+			font-weight: 600;
 		}
 		
 		.view-link {
@@ -756,8 +897,6 @@ async function searchResultsPage(query, results) {
 		
 		.view-link:hover {
 			color: #764ba2;
-			transform: translateX(5px);
-			display: inline-block;
 		}
 		
 		.no-results {
@@ -778,6 +917,45 @@ async function searchResultsPage(query, results) {
 			color: #666;
 		}
 		
+		/* Pagination */
+		.pagination {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 8px;
+			margin: 30px 0;
+			flex-wrap: wrap;
+		}
+		
+		.page-btn {
+			background: rgba(255, 255, 255, 0.95);
+			color: #667eea;
+			padding: 10px 16px;
+			border-radius: 8px;
+			text-decoration: none;
+			transition: all 0.3s ease;
+			font-weight: 500;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		}
+		
+		.page-btn:hover {
+			background: #667eea;
+			color: white;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+		}
+		
+		.page-btn.active {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			cursor: default;
+		}
+		
+		.page-dots {
+			color: rgba(255, 255, 255, 0.8);
+			padding: 0 5px;
+		}
+		
 		@media (max-width: 768px) {
 			.header {
 				flex-direction: column;
@@ -795,6 +973,10 @@ async function searchResultsPage(query, results) {
 			
 			.result-card {
 				padding: 20px;
+			}
+			
+			.pull-command {
+				font-size: 11px;
 			}
 		}
 		
@@ -818,34 +1000,68 @@ async function searchResultsPage(query, results) {
 		<div class="container">
 			<div class="header">
 				<div class="search-info">
-					<h1>Search Results for <span class="search-query">"${query}"</span></h1>
-					<p>${results.length} results found</p>
+					<h1>搜索结果: <span class="search-query">"${query}"</span></h1>
+					<div class="search-meta">共找到 ${totalCount} 个结果 - 第 ${page} 页</div>
 				</div>
-				<a href="/" class="back-link">← Back to Search</a>
+				<a href="/" class="back-link">← 返回首页</a>
 			</div>
 			
 			${results.length > 0 ? `
 				<div class="results-container">
 					${resultsHTML}
 				</div>
+				${paginationHTML}
 			` : `
 				<div class="no-results">
-					<h2>No results found</h2>
-					<p>Try searching with different keywords</p>
+					<h2>未找到结果</h2>
+					<p>请尝试其他关键词搜索</p>
 				</div>
 			`}
 		</div>
+		
+		<script>
+		function copyToClipboard(text, button) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(() => {
+					button.classList.add('copied');
+					button.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>';
+					setTimeout(() => {
+						button.classList.remove('copied');
+						button.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>';
+					}, 2000);
+				}).catch(err => {
+					console.error('Failed to copy:', err);
+					fallbackCopyTextToClipboard(text);
+				});
+			} else {
+				fallbackCopyTextToClipboard(text);
+			}
+		}
+		
+		function fallbackCopyTextToClipboard(text) {
+			const textArea = document.createElement("textarea");
+			textArea.value = text;
+			textArea.style.position = "fixed";
+			textArea.style.top = "-9999px";
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			
+			try {
+				document.execCommand('copy');
+				console.log('Fallback: Copied to clipboard');
+			} catch (err) {
+				console.error('Fallback: Failed to copy', err);
+			}
+			
+			document.body.removeChild(textArea);
+		}
+		</script>
 	</body>
 	</html>
 	`;
 	return text;
 }
-
-/**
- * 格式化数字 - 将大数字转换为可读格式 (1000 -> 1K, 1000000 -> 1M)
- * @param {number} num 数字
- * @returns {string}
- */
 function formatNumber(num) {
 	if (num >= 1000000000) {
 		return (num / 1000000000).toFixed(1) + 'B';
@@ -928,16 +1144,18 @@ async function handleRequest(request, env, ctx) {
 		if (pathname === '/search') {
 			try {
 				const query = url.searchParams.get('q');
+				const page = parseInt(url.searchParams.get('page') || '1');
 				if (query) {
-					// 调用 Docker Hub API 搜索
-					const searchUrl = `https://registry.hub.docker.com/v2/search/repositories/?query=${encodeURIComponent(query)}&page_size=25`;
+					// 调用 Docker Hub API 搜索 - 使用自定义分页
+					const searchUrl = `https://registry.hub.docker.com/v2/search/repositories/?query=${encodeURIComponent(query)}&page=${page}&page_size=20`;
 					const searchResponse = await fetch(searchUrl, { 
 						headers: { 'User-Agent': getReqHeader("User-Agent") || 'Mozilla/5.0' }
 					});
 					const searchData = await searchResponse.json();
 					
 					const results = searchData.results || [];
-					return new Response(await searchResultsPage(query, results), {
+					const totalCount = searchData.count || 0;
+					return new Response(await searchResultsPage(query, results, page, totalCount, url.hostname), {
 						headers: {
 							'Content-Type': 'text/html; charset=UTF-8',
 						},
@@ -947,7 +1165,8 @@ async function handleRequest(request, env, ctx) {
 				console.error('Search error:', error);
 				// 搜索失败也返回空结果页面
 				const query = url.searchParams.get('q') || '';
-				return new Response(await searchResultsPage(query, []), {
+				const page = parseInt(url.searchParams.get('page') || '1');
+				return new Response(await searchResultsPage(query, [], page, 0, url.hostname), {
 					headers: {
 						'Content-Type': 'text/html; charset=UTF-8',
 					},
@@ -1017,7 +1236,7 @@ async function handleRequest(request, env, ctx) {
 					} else return fetch(new Request(env.URL, request));
 				} else if (url.pathname == '/'){
 					// 显示搜索界面
-					return new Response(await searchInterface(), {
+					return new Response(await searchInterface(url.hostname), {
 						headers: {
 						  'Content-Type': 'text/html; charset=UTF-8',
 						},
