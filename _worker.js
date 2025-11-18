@@ -719,8 +719,7 @@ async function searchInterface(hostname) {
 			<p class="subtitle">专业的 Docker 镜像代理服务 - 快速 · 稳定 · 免费</p>
 
 			<div class="tabs">
-				<button class="tab active" onclick="switchTab('search')">🔍 搜索镜像</button>
-				<button class="tab" onclick="switchTab('convert')">🔄 镜像转换</button>
+				<button class="tab active" onclick="switchTab('convert')">🔄 镜像转换</button>
 				<button class="tab" onclick="switchTab('browse')">🌐 浏览 Docker Hub</button>
 				<button class="tab" onclick="switchTab('config')">⚙️ 配置指南</button>
 				<button class="tab" onclick="switchTab('compose')">📦 Docker Compose</button>
@@ -728,155 +727,9 @@ async function searchInterface(hostname) {
 				<button class="tab" onclick="switchTab('advanced')">🚀 高级功能</button>
 			</div>
 
-			<!-- 搜索镜像标签页 -->
-			<div id="search-content" class="tab-content active">
-				<div class="search-container">
-					<input type="text" class="search-input" id="search-input" placeholder="搜索 Docker 镜像，例如：nginx, redis, mysql, postgres...">
-					<button class="search-button" onclick="performSearch()"><span>🔍 搜索</span></button>
-				</div>
 
-				<div class="usage-section">
-					<h3>热门镜像</h3>
-					<div class="feature-grid">
-						<div class="feature-card" onclick="quickSearch('nginx')">
-							<h4>🌐 Nginx</h4>
-							<p>高性能 Web 服务器</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('redis')">
-							<h4>💾 Redis</h4>
-							<p>内存数据库</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('mysql')">
-							<h4>🗄️ MySQL</h4>
-							<p>关系型数据库</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('postgres')">
-							<h4>🐘 PostgreSQL</h4>
-							<p>高级数据库</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('node')">
-							<h4>⬢ Node.js</h4>
-							<p>JavaScript 运行时</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('python')">
-							<h4>🐍 Python</h4>
-							<p>Python 环境</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('golang')">
-							<h4>🔷 Golang</h4>
-							<p>Go 语言环境</p>
-						</div>
-						<div class="feature-card" onclick="quickSearch('alpine')">
-							<h4>⛰️ Alpine</h4>
-							<p>轻量级基础镜像</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="usage-section">
-					<h3>快速拉取示例</h3>
-					<div class="two-column">
-						<div>
-							<div class="example">
-								<div class="example-label">Web 服务器</div>
-								<div class="code-block" style="position:relative;">
-									<code>docker pull ${proxyDomain}/library/nginx:alpine</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
-								</div>
-							</div>
-							<div class="example">
-								<div class="example-label">数据库</div>
-								<div class="code-block" style="position:relative;">
-									<code>docker pull ${proxyDomain}/library/postgres:15</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
-								</div>
-							</div>
-						</div>
-						<div>
-							<div class="example">
-								<div class="example-label">缓存系统</div>
-								<div class="code-block" style="position:relative;">
-									<code>docker pull ${proxyDomain}/library/redis:7-alpine</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
-								</div>
-							</div>
-							<div class="example">
-								<div class="example-label">开发环境</div>
-								<div class="code-block" style="position:relative;">
-									<code>docker pull ${proxyDomain}/library/node:20-alpine</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-
-		<!-- 浏览 Docker Hub 标签页 -->
-		<div id="browse-content" class="tab-content">
-			<div class="usage-section">
-				<h3>Docker Hub 镜像浏览</h3>
-				<p style="color: #a0a0ff; margin-bottom: 15px;">
-					直接浏览 Docker Hub 的镜像仓库，支持查看镜像详情、标签列表和文档。
-				</p>
-				
-				<div class="example">
-					<div class="example-label">功能说明</div>
-					<p style="color: #a0a0ff; margin: 10px 0;">
-						• 浏览官方镜像和用户镜像<br>
-						• 查看镜像详细信息、标签和版本<br>
-						• 查看镜像文档和使用说明<br>
-						• 支持多级分页浏览
-					</p>
-				</div>
-				
-				<div style="margin-top: 20px;">
-					<button class="search-button" onclick="openDockerHub('/_/nginx')" style="margin: 5px;">
-						<span>🌐 Nginx 官方镜像</span>
-					</button>
-					<button class="search-button" onclick="openDockerHub('/_/redis')" style="margin: 5px;">
-						<span>💾 Redis 官方镜像</span>
-					</button>
-					<button class="search-button" onclick="openDockerHub('/_/mysql')" style="margin: 5px;">
-						<span>🗄️ MySQL 官方镜像</span>
-					</button>
-					<button class="search-button" onclick="openDockerHub('/search')" style="margin: 5px;">
-						<span>🔍 浏览所有镜像</span>
-					</button>
-				</div>
-			</div>
-			
-			<div class="usage-section">
-				<h3>使用方法</h3>
-				<p style="color: #a0a0ff; margin-bottom: 15px;">
-					点击上方按钮将打开 Docker Hub 对应页面，您可以：
-				</p>
-				<div class="example">
-					<div class="example-label">直接在地址栏输入</div>
-					<div class="code-block" style="position:relative;">
-						<code>${proxyDomain}/_/nginx          # 官方镜像页面
-${proxyDomain}/r/grafana/grafana  # 用户镜像页面
-${proxyDomain}/search             # 浏览所有镜像
-${proxyDomain}/search?q=postgres  # 搜索镜像</code>
-						<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
-					</div>
-				</div>
-				<div class="example">
-					<div class="example-label">支持的 URL 格式</div>
-					<p style="color: #a0a0ff; margin: 10px 0;">
-						• <code class="code-inline">/_/镜像名</code> - 官方镜像（如 /_/nginx）<br>
-						• <code class="code-inline">/r/用户/镜像</code> - 用户镜像（如 /r/grafana/grafana）<br>
-						• <code class="code-inline">/search</code> - 浏览和搜索镜像<br>
-						• <code class="code-inline">/v2/repositories/...</code> - Docker Hub API<br>
-						• 支持所有 Docker Hub 的分页和详情页面
-					</p>
-				</div>
-			</div>
-		</div>
-
-			<!-- 镜像转换标签页 -->
-			<div id="convert-content" class="tab-content">
+		<!-- 镜像转换标签页 -->
+		<div id="convert-content" class="tab-content active">
 				<div class="search-container">
 					<input type="text" class="search-input" id="convert-input" placeholder="输入镜像名称或 Docker Hub 链接，例如：nginx:latest, library/redis:alpine, https://hub.docker.com/_/mysql">
 					<button class="search-button" onclick="convertImage()"><span>🔄 转换</span></button>
@@ -887,19 +740,19 @@ ${proxyDomain}/search?q=postgres  # 搜索镜像</code>
 						<h3>代理镜像地址</h3>
 						<div class="code-block" style="position:relative;">
 							<code id="proxy-address"></code>
-							<button class="copy-button" onclick="copyText('proxy-address')">复制</button>
+							<button class="copy-button" onclick="copyText('proxy-address', this)">复制</button>
 						</div>
 
 						<h3 style="margin-top: 20px;">Docker 拉取命令</h3>
 						<div class="code-block" style="position:relative;">
 							<code id="pull-command"></code>
-							<button class="copy-button" onclick="copyText('pull-command')">复制</button>
+							<button class="copy-button" onclick="copyText('pull-command', this)">复制</button>
 						</div>
 
 						<h3 style="margin-top: 20px;">在 Docker Compose 中使用</h3>
 						<div class="code-block" style="position:relative;">
 							<code id="compose-usage"></code>
-							<button class="copy-button" onclick="copyText('compose-usage')">复制</button>
+							<button class="copy-button" onclick="copyText('compose-usage', this)">复制</button>
 						</div>
 					</div>
 				</div>
@@ -930,6 +783,33 @@ https://hub.docker.com/r/grafana/grafana</code></div>
 				</div>
 			</div>
 
+			<!-- 浏览 Docker Hub 标签页 -->
+			<div id="browse-content" class="tab-content">
+				<div class="usage-section">
+					<h3>🌐 浏览 Docker Hub</h3>
+					<p style="color: #a0a0ff; margin-bottom: 20px; font-size: 1.1em;">
+						直接访问 Docker Hub 官方网站浏览镜像仓库
+					</p>
+					
+					<div style="text-align: center; margin: 40px 0;">
+						<a href="https://hub.docker.com" target="_blank" rel="noopener noreferrer" class="search-button" style="display: inline-block; text-decoration: none; font-size: 1.2em; padding: 20px 40px;">
+							<span>🔗 打开 Docker Hub 官网</span>
+						</a>
+					</div>
+
+					<div class="example">
+						<div class="example-label">常用链接</div>
+						<div style="margin-top: 15px;">
+							<p style="color: #a0a0ff; margin: 10px 0;">
+								• <a href="https://hub.docker.com/search?q=&type=image" target="_blank" rel="noopener noreferrer" style="color: #00ffff; text-decoration: none;">浏览所有镜像</a><br>
+								• <a href="https://hub.docker.com/search?q=&type=image&image_filter=official" target="_blank" rel="noopener noreferrer" style="color: #00ffff; text-decoration: none;">官方镜像</a><br>
+								• <a href="https://hub.docker.com/explore" target="_blank" rel="noopener noreferrer" style="color: #00ffff; text-decoration: none;">探索热门镜像</a>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- 配置指南标签页 -->
 			<div id="config-content" class="tab-content">
 				<div class="usage-section">
@@ -940,7 +820,7 @@ https://hub.docker.com/r/grafana/grafana</code></div>
 						<div class="example-label">Step 1: 编辑配置文件</div>
 						<div class="code-block" style="position:relative;">
 							<code>sudo nano /etc/docker/daemon.json</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -952,7 +832,7 @@ https://hub.docker.com/r/grafana/grafana</code></div>
   "max-concurrent-downloads": 10,
   "max-concurrent-uploads": 10
 }</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -964,7 +844,7 @@ sudo systemctl restart docker
 
 # 验证配置
 docker info | grep "Registry Mirrors" -A 1</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 				</div>
@@ -979,14 +859,14 @@ docker info | grep "Registry Mirrors" -A 1</code>
 								<div class="example-label">拉取官方镜像</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker pull ${proxyDomain}/library/nginx:latest</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">拉取用户镜像</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker pull ${proxyDomain}/bitnami/postgresql:latest</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -996,7 +876,7 @@ docker info | grep "Registry Mirrors" -A 1</code>
 								<div class="code-block" style="position:relative;">
 									<code>docker run -d -p 80:80 \\
   ${proxyDomain}/library/nginx:alpine</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
@@ -1006,7 +886,7 @@ docker info | grep "Registry Mirrors" -A 1</code>
 WORKDIR /app
 COPY . .
 RUN npm install</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -1024,7 +904,7 @@ RUN npm install</code>
 							<code>{
   "registry-mirrors": ["https://${proxyDomain}"]
 }</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 						<p style="color: #a0a0ff; margin: 10px 0;">4. 点击 "Apply & Restart"</p>
 					</div>
@@ -1067,7 +947,7 @@ services:
 
 volumes:
   mysql_data:</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -1101,7 +981,7 @@ services:
 
 volumes:
   db_data:</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -1140,7 +1020,7 @@ services:
 volumes:
   mongo_data:
   redis_data:</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 				</div>
@@ -1153,21 +1033,21 @@ volumes:
 								<div class="example-label">启动服务</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose up -d</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">查看日志</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose logs -f</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">停止服务</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose down</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -1176,21 +1056,21 @@ volumes:
 								<div class="example-label">重启服务</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose restart</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">查看状态</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose ps</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">拉取镜像</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker-compose pull</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -1259,7 +1139,7 @@ docker login ${proxyDomain}
 # 输入您的 Docker Hub 用户名和密码
 Username: your-username
 Password: your-password</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -1267,7 +1147,7 @@ Password: your-password</code>
 						<div class="example-label">拉取私有镜像</div>
 						<div class="code-block" style="position:relative;">
 							<code>docker pull ${proxyDomain}/your-username/private-image:tag</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 				</div>
@@ -1293,7 +1173,7 @@ FROM ${proxyDomain}/library/nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 
@@ -1306,7 +1186,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 CMD ["python", "app.py"]</code>
-							<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+							<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 						</div>
 					</div>
 				</div>
@@ -1378,14 +1258,14 @@ mysql:8.0.35</code></div>
 								<div class="code-block" style="position:relative;">
 									<code>docker images
 docker inspect image:tag</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">清理无用镜像</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker image prune -a</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -1394,14 +1274,14 @@ docker inspect image:tag</code>
 								<div class="example-label">查看容器日志</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker logs -f container_name</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 							<div class="example">
 								<div class="example-label">进入容器</div>
 								<div class="code-block" style="position:relative;">
 									<code>docker exec -it container_name sh</code>
-									<button class="copy-button" onclick="copyText(this.previousElementSibling)">复制</button>
+									<button class="copy-button" onclick="copyText(this.previousElementSibling, this)">复制</button>
 								</div>
 							</div>
 						</div>
@@ -1433,29 +1313,6 @@ docker inspect image:tag</code>
 		}
 
 		// 搜索功能
-		function performSearch() {
-			const query = document.getElementById('search-input').value.trim();
-			if (query) {
-				window.location.href = '/search?q=' + encodeURIComponent(query) + '&page=1';
-			}
-		}
-
-		function quickSearch(query) {
-
-			document.getElementById('search-input').value = query;
-			performSearch();
-		}
-
-		document.getElementById('search-input').addEventListener('keypress', (e) => {
-			if (e.key === 'Enter') performSearch();
-		});
-
-		// Docker Hub 浏览功能
-		function openDockerHub(path) {
-			// 直接导航到 Docker Hub 页面路径
-			window.location.href = '/' + path.replace(/^\\/+/, '');
-		}
-
 		// 镜像转换功能
 		function convertImage() {
 			const input = document.getElementById('convert-input').value.trim();
@@ -1492,25 +1349,71 @@ docker inspect image:tag</code>
 		});
 
 		// 复制功能
-		function copyText(element) {
+		function copyText(element, button) {
+			// If button is not provided, try to get it from event (for inline onclick handlers)
+			const btn = button || (typeof window !== 'undefined' && window.event ? window.event.target : null);
+			
 			const text = typeof element === 'string' ? 
 				document.getElementById(element).textContent : 
 				element.textContent;
 			
-			navigator.clipboard.writeText(text).then(() => {
-				const btn = event.target;
-				const originalText = btn.textContent;
-				btn.textContent = '✓ 已复制';
-				btn.style.background = 'rgba(0, 255, 0, 0.3)';
-				btn.style.borderColor = 'rgba(0, 255, 0, 0.5)';
-				setTimeout(() => {
-					btn.textContent = originalText;
-					btn.style.background = '';
-					btn.style.borderColor = '';
-				}, 2000);
-			}).catch(() => {
+			// Try modern clipboard API first
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(() => {
+					if (btn) {
+						const originalText = btn.textContent;
+						btn.textContent = '✓ 已复制';
+						btn.style.background = 'rgba(0, 255, 0, 0.3)';
+						btn.style.borderColor = 'rgba(0, 255, 0, 0.5)';
+						setTimeout(() => {
+							btn.textContent = originalText;
+							btn.style.background = '';
+							btn.style.borderColor = '';
+						}, 2000);
+					}
+				}).catch((err) => {
+					console.error('Clipboard API failed:', err);
+					fallbackCopyText(text, btn);
+				});
+			} else {
+				// Fallback for older browsers or non-secure contexts
+				fallbackCopyText(text, btn);
+			}
+		}
+		
+		function fallbackCopyText(text, btn) {
+			const textArea = document.createElement('textarea');
+			textArea.value = text;
+			textArea.style.position = 'fixed';
+			textArea.style.top = '-9999px';
+			textArea.style.left = '-9999px';
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			
+			try {
+				const successful = document.execCommand('copy');
+				if (successful) {
+					if (btn) {
+						const originalText = btn.textContent;
+						btn.textContent = '✓ 已复制';
+						btn.style.background = 'rgba(0, 255, 0, 0.3)';
+						btn.style.borderColor = 'rgba(0, 255, 0, 0.5)';
+						setTimeout(() => {
+							btn.textContent = originalText;
+							btn.style.background = '';
+							btn.style.borderColor = '';
+						}, 2000);
+					}
+				} else {
+					alert('复制失败，请手动复制');
+				}
+			} catch (err) {
+				console.error('Fallback copy failed:', err);
 				alert('复制失败，请手动复制');
-			});
+			}
+			
+			document.body.removeChild(textArea);
 		}
 		</script>
 	</body>
