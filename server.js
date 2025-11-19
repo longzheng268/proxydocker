@@ -149,9 +149,11 @@ function nodeRequestToWorkerRequest(req) {
         const request = new Request(url, init);
         
         // 添加模拟的 cf 对象用于IP地理位置检查
+        // 对于本地IP和已经在Node.js层面检查通过的IP，设置为CN以通过Worker的检查
         const clientIP = getClientIP(req);
-        const { country } = isIPAllowedNodeJS(clientIP);
-        request.cf = { country: country || 'XX' };
+        const { allowed, country } = isIPAllowedNodeJS(clientIP);
+        // 如果Node.js层面允许访问，将country设置为CN，这样Worker层面也会允许
+        request.cf = { country: allowed ? 'CN' : (country || 'XX') };
         
         resolve(request);
       });
@@ -161,9 +163,11 @@ function nodeRequestToWorkerRequest(req) {
   const request = new Request(url, init);
   
   // 添加模拟的 cf 对象用于IP地理位置检查
+  // 对于本地IP和已经在Node.js层面检查通过的IP，设置为CN以通过Worker的检查
   const clientIP = getClientIP(req);
-  const { country } = isIPAllowedNodeJS(clientIP);
-  request.cf = { country: country || 'XX' };
+  const { allowed, country } = isIPAllowedNodeJS(clientIP);
+  // 如果Node.js层面允许访问，将country设置为CN，这样Worker层面也会允许
+  request.cf = { country: allowed ? 'CN' : (country || 'XX') };
   
   return Promise.resolve(request);
 }
