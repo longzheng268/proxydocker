@@ -29,6 +29,9 @@
   "dependencies": {
     "node-fetch": "^2.6.7"
   },
+  "optionalDependencies": {
+    "geoip-lite": "^1.4.10"
+  },
   "devDependencies": {
     "wrangler": "^4.0.0"
   },
