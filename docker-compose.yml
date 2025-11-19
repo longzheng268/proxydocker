@@ -13,6 +13,11 @@ services:
       - HOST=0.0.0.0
       - NODE_ENV=production
       
+      # IP Geolocation Restriction (NEW)
+      # Uncomment to enable IP-based access control
+      # - ENABLE_IP_RESTRICTION=true
+      # - ALLOWED_COUNTRIES=CN,HK,TW,MO
+      
       # Optional: Custom homepage URL or "nginx" for fake nginx page
       # - CUSTOM_URL=https://example.com
       # - CUSTOM_URL=nginx
