@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json ./
 
-# Install dependencies
+# Install dependencies (including optionalDependencies like geoip-lite for IP restrictions)
 RUN npm install --production
 
 # Copy application files

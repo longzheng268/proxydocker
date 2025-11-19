@@ -17,6 +17,7 @@
 - ✨ **动画效果** - 流畅的动画和鼠标追踪效果
 - 🛡️ **模块化设计** - UI 模块与核心代理隔离，即使 UI 出错也不影响镜像拉取
 - 🌍 **多仓库支持** - 支持 Docker Hub, GCR, Quay.io 等多个镜像仓库
+- 🔒 **IP 地理位置限制** - 可配置只允许特定国家/地区访问，防止滥用
 - 💰 **灵活选择** - Cloudflare Workers 免费版或自有服务器部署
 - 🔌 **零客户端依赖** - 客户端无需安装任何软件，仅需配置 Docker
 
@@ -24,6 +25,7 @@
 
 - [快速开始](#-快速开始)
 - [完整部署指南](README_DEPLOYMENT.md) - **包含 Docker、Node.js、systemd 等所有部署方式**
+- [IP 地理位置限制指南](IP_RESTRICTION_GUIDE.md) - **配置 IP 访问限制，防止滥用**
 - [客户端配置](#-客户端配置)
 - [使用说明](#-使用说明)
 - [高级配置](#-高级配置)
@@ -1157,6 +1159,8 @@ docker pull your-worker.workers.dev/username/imagename:tag
 | `URL` | 自定义首页 URL 或 "nginx" | `https://example.com` 或 `nginx` |
 | `URL302` | 首页重定向 URL | `https://example.com` |
 | `UA` | 屏蔽的 User-Agent（逗号分隔） | `bot,crawler,spider` |
+| `ENABLE_IP_RESTRICTION` | 是否启用 IP 地理位置限制 | `true` 或 `false` |
+| `ALLOWED_COUNTRIES` | 允许访问的国家代码（逗号分隔） | `CN` 或 `CN,HK,TW,MO` |
 
 #### 配置环境变量步骤
 
@@ -1166,6 +1170,32 @@ docker pull your-worker.workers.dev/username/imagename:tag
 4. 点击 "Add variable"
 5. 输入变量名和值
 6. 点击 "Save"
+
+### IP 地理位置限制 🔒
+
+ProxyDocker 支持基于 IP 地理位置的访问限制，可以有效防止滥用和减少来自国外的投诉。
+
+**快速配置：**
+
+```bash
+# Cloudflare Workers - 在 wrangler.toml 中配置
+[vars]
+ENABLE_IP_RESTRICTION = "true"
+ALLOWED_COUNTRIES = "CN"
+
+# Node.js - 环境变量
+ENABLE_IP_RESTRICTION=true
+ALLOWED_COUNTRIES=CN,HK,TW,MO
+```
+
+**详细配置指南：** 请参阅 [IP 地理位置限制指南](IP_RESTRICTION_GUIDE.md)
+
+**功能特点：**
+- ✅ 支持多个国家/地区白名单
+- ✅ Cloudflare Workers 零性能损耗（使用内置地理信息）
+- ✅ Node.js 可选依赖（使用 geoip-lite 库）
+- ✅ 友好的错误提示页面
+- ✅ 灵活的启用/禁用控制
 
 ### 自定义域名路由
 

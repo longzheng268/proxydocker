@@ -15,6 +15,14 @@ enabled = true
 # [vars]
 # MY_VARIABLE = "production_value"
 
+# IP Geolocation Restriction Configuration
+# Uncomment and configure the following variables to enable IP restrictions
+# ENABLE_IP_RESTRICTION = "true"  # Set to "false" to disable IP restrictions
+# ALLOWED_COUNTRIES = "CN,HK,TW,MO"  # Comma-separated list of allowed country codes (ISO 3166-1 alpha-2)
+                                      # Default: "CN" (China mainland only)
+                                      # Common codes: CN (China), HK (Hong Kong), TW (Taiwan), MO (Macau)
+                                      # US (United States), JP (Japan), KR (Korea), etc.
+
 # Bind the Workers AI model catalog
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#ai
 # [ai]

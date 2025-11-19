@@ -15,6 +15,11 @@ let workers_url = 'https://proxydocker.lz-0315.com';
 
 let 屏蔽爬虫UA = ['netcraft'];
 
+// IP地理位置限制配置
+// 允许访问的国家代码列表（默认只允许中国大陆）
+// 可通过环境变量 ALLOWED_COUNTRIES 配置，多个国家用逗号分隔，例如: "CN,HK,TW,MO"
+let allowedCountries = ['CN'];
+
 // ============================================================================
 // CORE ROUTING - Essential for proxy functionality
 // ============================================================================
@@ -105,6 +110,124 @@ async function ADD(envadd) {
 	if (addtext.charAt(addtext.length - 1) == ',') addtext = addtext.slice(0, addtext.length - 1);
 	const add = addtext.split(',');
 	return add;
+}
+
+/**
+ * 检查IP地址是否被允许访问
+ * @param {Request} request 请求对象
+ * @param {Object} env 环境变量
+ * @returns {boolean} 是否允许访问
+ */
+function isIPAllowed(request, env) {
+	// 如果未启用IP限制功能，则允许所有访问
+	if (env.ENABLE_IP_RESTRICTION === 'false' || env.ENABLE_IP_RESTRICTION === '0') {
+		return true;
+	}
+	
+	// 从 Cloudflare 的 request.cf 对象中获取国家代码
+	// request.cf 包含了 Cloudflare 提供的请求元数据
+	const country = request.cf?.country;
+	
+	// 如果无法获取国家信息，为安全起见拒绝访问
+	// 但在某些测试环境中可能没有 cf 对象，此时允许访问
+	if (!country) {
+		// 如果环境变量明确设置为开发模式，则允许访问
+		if (env.NODE_ENV === 'development' || env.NODE_ENV === 'test') {
+			return true;
+		}
+		// 生产环境下无法获取国家信息时，为安全起见拒绝访问
+		return false;
+	}
+	
+	// 检查国家代码是否在允许列表中
+	return allowedCountries.includes(country.toUpperCase());
+}
+
+/**
+ * 返回IP被阻止的错误页面
+ * @param {string} country 国家代码
+ * @returns {Response}
+ */
+function blockedIPResponse(country) {
+	const html = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Access Denied - 访问被拒绝</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		.container {
+			background: white;
+			border-radius: 15px;
+			padding: 40px;
+			max-width: 600px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			text-align: center;
+		}
+		.icon {
+			font-size: 64px;
+			margin-bottom: 20px;
+		}
+		h1 {
+			color: #333;
+			margin-bottom: 15px;
+			font-size: 28px;
+		}
+		p {
+			color: #666;
+			line-height: 1.6;
+			margin-bottom: 10px;
+		}
+		.country {
+			color: #667eea;
+			font-weight: bold;
+		}
+		.footer {
+			margin-top: 30px;
+			padding-top: 20px;
+			border-top: 1px solid #eee;
+			color: #999;
+			font-size: 14px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="icon">🚫</div>
+		<h1>Access Denied - 访问被拒绝</h1>
+		<p>抱歉，此服务目前仅对特定地区开放。</p>
+		<p>Sorry, this service is currently only available in specific regions.</p>
+		${country ? `<p style="margin-top: 20px;">检测到的地区 / Detected region: <span class="country">${country}</span></p>` : ''}
+		<div class="footer">
+			如有疑问，请联系管理员<br>
+			If you have any questions, please contact the administrator
+		</div>
+	</div>
+</body>
+</html>
+	`;
+	
+	return new Response(html, {
+		status: 403,
+		headers: {
+			'Content-Type': 'text/html; charset=UTF-8',
+		},
+	});
 }
 
 // ============================================================================
@@ -1951,6 +2074,22 @@ export default {
  */
 async function handleRequest(request, env, ctx) {
 		const getReqHeader = (key) => request.headers.get(key); // 获取请求头
+
+		// ========================================================================
+		// IP GEOLOCATION RESTRICTION - 检查IP地理位置限制
+		// ========================================================================
+		
+		// 解析允许的国家列表（如果配置了环境变量）
+		if (env.ALLOWED_COUNTRIES) {
+			allowedCountries = await ADD(env.ALLOWED_COUNTRIES);
+		}
+		
+		// 检查IP是否被允许访问
+		if (!isIPAllowed(request, env)) {
+			const country = request.cf?.country || 'Unknown';
+			console.log(`Access denied from country: ${country}`);
+			return blockedIPResponse(country);
+		}
 
 		let url = new URL(request.url); // 解析请求URL
 		const userAgentHeader = request.headers.get('User-Agent');
